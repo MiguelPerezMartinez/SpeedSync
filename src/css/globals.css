@@ -1,0 +1,44 @@
+html,
+body {
+  width: 100vw;
+  height: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 400px;
+  color: var(--neutral-white);
+  background: var(--background-primary);
+  font-family: var(--font-geist-mono);
+  font-size: 0.8rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  justify-content: center;
+}
+
+* {
+  outline: 1px solid red !important;
+  box-sizing: border-box;
+}
+
+h1 {
+  font-family: var(--font-goldman);
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 1.2rem;
+  font-weight: normal;
+}
+
+a {
+  color: var(--link-default);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--link-hover);
+}

@@ -1,0 +1,31 @@
+:root {
+  --primary-color: #00e5ff; /* Neon Blue for main highlights, CTAs, and branding elements */
+  --primary-color-dark: #008897; /* Neon Blue for main highlights, CTAs, and branding elements */
+  --secondary-color: #8a2be2; /* Vibrant Purple for complementary accents and secondary highlights */
+  --secondary-color-dark: #5e1c9b; /* Vibrant Purple for complementary accents and secondary highlights */
+
+  /* Neutral Colors */
+  --neutral-dark: #0a0a0a; /* Deep Space Black for headings and bold text */
+  --neutral-medium: #303841; /* Steel Gray for body text and secondary elements */
+  --neutral-light: #a3aab2; /* Soft Gray for backgrounds and spacing */
+  --neutral-white: #ffffff; /* Pure White for clean areas and spacing */
+
+  /* Accent Colors */
+  --accent-highlight: #00ff87; /* Emerald Green for special highlights or differentiation */
+
+  /* Feedback Colors */
+  --success-color: #00ff87; /* Emerald Green for success states and positive feedback */
+  --warning-color: #ffc400; /* Solar Yellow for cautionary messages or warnings */
+  --error-color: #ff6f00; /* Fiery Orange for error states or destructive actions */
+
+  /* Background Colors */
+  --background-primary: #030301; /* Deep Space Black for the main background layout */
+  --background-secondary: #393848; /* Steel Gray for subtle secondary backgrounds */
+  --card-background: #6a677a; /* Steel Gray for card components and secondary elements */
+
+  /* Interactive/Link Colors */
+  --link-default: #00e5ff; /* Neon Blue for default interactive elements and links */
+  --link-hover: #d263e6;
+  --link-buy: #ffc400;
+  --link-buy-hover: #ff6f00;
+}
