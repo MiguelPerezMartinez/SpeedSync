@@ -170,7 +170,7 @@ const Speedometer = ({
       {/* Speed Display */}
       <text
         x="50%"
-        y="25%"
+        y="30%"
         dominantBaseline="middle"
         textAnchor="middle"
         fontSize="18px"
@@ -194,7 +194,7 @@ const Speedometer = ({
       </text>
       <text
         x="50%"
-        y="75%"
+        y="70%"
         dominantBaseline="middle"
         textAnchor="middle"
         fontSize="18px"
