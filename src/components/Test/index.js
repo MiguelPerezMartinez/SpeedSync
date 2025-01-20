@@ -5,12 +5,12 @@ const Speedometer = ({
   maxSpeed = 300,
   radius = 100,
   strokeWidth = 10,
+  maxSpeedReached,
 }) => {
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = 2 * Math.PI * normalizedRadius;
 
   const [animatedSpeed, setAnimatedSpeed] = useState(0);
-  const [maxSpeedReached, setMaxSpeedReached] = useState(0);
 
   useEffect(() => {
     let start = animatedSpeed;
@@ -35,9 +35,6 @@ const Speedometer = ({
     };
 
     requestAnimationFrame(animate);
-
-    // Track max speed reached
-    setMaxSpeedReached((prevMax) => Math.max(prevMax, speed));
   }, [speed]);
 
   const strokeDashoffset =

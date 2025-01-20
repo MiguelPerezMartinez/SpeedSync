@@ -13,24 +13,9 @@ const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
 
-// const velocimeterSpeeds = [
-//   0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300,
-// ];
-
 const randomSpeed = () => {
   return Math.floor(Math.random() * 300);
 };
-
-// const updateProgressBar = (speed, minSpeed = 0, maxSpeed = 300) => {
-//   let ratio = (speed - minSpeed) / (maxSpeed - minSpeed);
-//   ratio = Math.max(0, Math.min(1, ratio));
-
-//   let r = Math.round(255 * ratio);
-//   let g = Math.round(255 * (1 - ratio));
-//   let color = `rgb(${r}, ${g}, 0)`;
-
-//   document.getElementById("progress-bar").style.background = color;
-// };
 
 const Home = () => {
   const hydrated = useHydration();
@@ -40,7 +25,7 @@ const Home = () => {
   const [position, setPosition] = useState(null);
 
   const [speed, setSpeed] = useState(0);
-  const [maxSpeed, setMaxSpeed] = useState(0);
+  const [maxSpeedReached, setMaxSpeedReached] = useState(0);
   const [avgSpeed, setAvgSpeed] = useState(0);
   const [totalSpeed, setTotalSpeed] = useState(0);
   const [speedCount, setSpeedCount] = useState(0);
@@ -49,11 +34,6 @@ const Home = () => {
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
   const [distanceCountdown, setDistanceCountdown] = useState(1000);
-  const [speedPercent, setSpeedPercent] = useState(0);
-  const [maxSpeedPercent, setMaxSpeedPercent] = useState(0);
-
-  // TESTS
-  const [progress, setProgress] = useState(0);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
     console.log(pos1, pos2);
@@ -96,62 +76,56 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // useEffect(() => {
-  //   if (position === null) return;
-  //   const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
-
-  //   setSpeed(instantSpeed);
-
-  //   if (instantSpeed > maxSpeed) {
-  //     setMaxSpeed(instantSpeed);
-  //   }
-
-  //   if (position.coords.speed !== null) {
-  //     const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-  //       2
-  //     );
-  //     const tmpSpeedCount = Number(speedCount) + 1;
-  //     setTotalSpeed(tmpTotalSpeed);
-  //     setSpeedCount((prevCount) => Number(prevCount + 1));
-  //     setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
-  //   }
-
-  //   if (lastPosition) {
-  //     const distance = getDistanceFromLatLon(lastPosition, position.coords);
-  //     setTotalDistance(
-  //       (prevDistance) => Number(prevDistance) + Number(distance)
-  //     );
-  //     setDistanceCountdown(
-  //       (prevCountdown) => Number(prevCountdown) - Number(distance)
-  //     );
-  //   }
-  //   setLastPosition(position.coords);
-  //   setLat(position.coords.latitude);
-  //   setLon(position.coords.longitude);
-  // }, [position, speed]);
-
-  // To test with random speed
   useEffect(() => {
-    const instantSpeed = speed;
+    if (position === null) return;
+    const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
+
     setSpeed(instantSpeed);
 
-    if (instantSpeed > maxSpeed) {
-      setMaxSpeed(instantSpeed);
+    if (instantSpeed > maxSpeedReached) {
+      setMaxSpeedReached(instantSpeed);
     }
-    const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-      2
-    );
-    const tmpSpeedCount = Number(speedCount) + 1;
-    setTotalSpeed(tmpTotalSpeed);
-    setSpeedCount((prevCount) => Number(prevCount + 1));
-    setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+
+    if (position.coords.speed !== null) {
+      const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+        2
+      );
+      const tmpSpeedCount = Number(speedCount) + 1;
+      setTotalSpeed(tmpTotalSpeed);
+      setSpeedCount((prevCount) => Number(prevCount + 1));
+      setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+    }
+
+    if (lastPosition) {
+      const distance = getDistanceFromLatLon(lastPosition, position.coords);
+      setTotalDistance(
+        (prevDistance) => Number(prevDistance) + Number(distance)
+      );
+      setDistanceCountdown(
+        (prevCountdown) => Number(prevCountdown) - Number(distance)
+      );
+    }
+    setLastPosition(position.coords);
+    setLat(position.coords.latitude);
+    setLon(position.coords.longitude);
   }, [position, speed]);
 
-  useEffect(() => {
-    // updateProgressBar(speed);
-    setSpeedPercent((speed / maxSpeedLimit) * 100);
-    setMaxSpeedPercent((maxSpeed / maxSpeedLimit) * 100);
-  }, [speed, maxSpeed]);
+  // To test with random speed
+  // useEffect(() => {
+  //   const instantSpeed = speed;
+  //   setSpeed(instantSpeed);
+
+  //   if (instantSpeed > maxSpeedReached) {
+  //     setMaxSpeedReached(instantSpeed);
+  //   }
+  //   const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+  //     2
+  //   );
+  //   const tmpSpeedCount = Number(speedCount) + 1;
+  //   setTotalSpeed(tmpTotalSpeed);
+  //   setSpeedCount((prevCount) => Number(prevCount + 1));
+  //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  // }, [position, speed]);
 
   const resetAvgSpeed = () => {
     setTotalSpeed(0);
@@ -164,14 +138,6 @@ const Home = () => {
   return (
     <Suspense key={hydrated}>
       <Grid container sx={{ display: "flex", flexDirection: "column" }}>
-        {/* <input
-          type="range"
-          min="0"
-          max="100"
-          value={progress}
-          onChange={(e) => setProgress(Number(e.target.value))}
-          style={{ marginTop: "20px", width: "200px" }}
-        /> */}
         <Grid
           size={12}
           sx={{ display: "flex", height: "400px" }}
@@ -199,81 +165,10 @@ const Home = () => {
               {avgSpeed}
             </Typography>
           </Grid>
-          {/* <Grid
-            size={2}
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Grid
-              size={1}
-              sx={{
-                position: "relative",
-                overflow: "hidden",
-                border: "1px solid #fff",
-                width: "20px",
-                height: "90%",
-              }}
-            >
-              <div
-                id="progress-bar"
-                style={{
-                  height: `${speedPercent}%`,
-                  position: "absolute",
-                  bottom: 0,
-                  width: "100%",
-                  background: "linear-gradient(to top, green, yellow, red)",
-                  transition: "all 0.5s ease-in-out",
-                }}
-              ></div>
-              <div
-                style={{
-                  top: `${100 - maxSpeedPercent}%`,
-                  position: "absolute",
-                  left: 0,
-                  width: "100%",
-                  height: "2px",
-                  background: "red",
-                  transition: "top 0.5s ease-in-out",
-                }}
-              ></div>
-            </Grid>
-            <Grid
-              size={1}
-              sx={{
-                height: "90%",
-              }}
-            >
-              <Grid
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  height: "100%",
-                  justifyContent: "space-between",
-                }}
-              >
-                {velocimeterSpeeds
-                  .map((speed, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        display: "block",
-                        height: `100 / ${velocimeterSpeeds.length}%`,
-                      }}
-                    >
-                      -{speed}
-                    </div>
-                  ))
-                  .reverse()}
-              </Grid>
-            </Grid>
-          </Grid> */}
         </Grid>
         <Grid size={12} sx={{ display: "flex" }}>
           <Grid size={6} sx={{ display: "flex", flexDirection: "column" }}>
-            <Test speed={speed}></Test>
+            <Test speed={speed} maxSpeedReached={maxSpeedReached}></Test>
             <Map lat={lat} lon={lon} />
           </Grid>
           <Grid
