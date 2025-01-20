@@ -74,7 +74,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSpeed(randomSpeed());
+      // setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
