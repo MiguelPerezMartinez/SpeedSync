@@ -13,9 +13,9 @@ const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
 
-const randomSpeed = () => {
-  return Math.floor(Math.random() * 300);
-};
+// const randomSpeed = () => {
+//   return Math.floor(Math.random() * 300);
+// };
 
 const Home = () => {
   const hydrated = useHydration();
@@ -36,7 +36,6 @@ const Home = () => {
   const [distanceCountdown, setDistanceCountdown] = useState(1000);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
-    console.log(pos1, pos2);
     const R = 6371000;
     const lat1 = (pos1.latitude * Math.PI) / 180;
     const lat2 = (pos2.latitude * Math.PI) / 180;
@@ -63,7 +62,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSpeed(randomSpeed());
+      // setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -144,7 +143,7 @@ const Home = () => {
           onClick={resetAvgSpeed}
         >
           <Grid
-            size={10}
+            size={12}
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -167,9 +166,15 @@ const Home = () => {
           </Grid>
         </Grid>
         <Grid size={12} sx={{ display: "flex" }}>
-          <Grid size={6} sx={{ display: "flex", flexDirection: "column" }}>
+          <Grid
+            size={6}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Test speed={speed} maxSpeedReached={maxSpeedReached}></Test>
-            <Map lat={lat} lon={lon} />
           </Grid>
           <Grid
             size={6}
@@ -204,6 +209,9 @@ const Home = () => {
               </Typography>
             </Grid>
           </Grid>
+        </Grid>
+        <Grid size={12}>
+          <Map lat={lat} lon={lon} />
         </Grid>
       </Grid>
     </Suspense>

@@ -179,6 +179,8 @@ const Speedometer = ({
       >
         Speed
       </text>
+
+      <rect x="31%" y="38%" width="75px" height="40" fill="black" />
       <text
         x="50%"
         y="50%"
