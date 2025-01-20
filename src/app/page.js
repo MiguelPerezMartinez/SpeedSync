@@ -30,7 +30,7 @@ const Home = () => {
   const [avgSpeed, setAvgSpeed] = useState(0);
   const [totalSpeed, setTotalSpeed] = useState(0);
   const [speedCount, setSpeedCount] = useState(0);
-  const [totalDistance, setTotalDistance] = useState(0);
+  const [totalDistance, setTotalDistance] = useState(0.0);
   const [lastPosition, setLastPosition] = useState(null);
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
@@ -98,8 +98,8 @@ const Home = () => {
 
     if (lastPosition) {
       const distance = getDistanceFromLatLon(lastPosition, position.coords);
-      setTotalDistance(
-        (prevDistance) => Number(prevDistance) + Number(distance)
+      setTotalDistance((prevDistance) =>
+        ((Number(prevDistance) + Number(distance)) / 1000).toFixed(1)
       );
       setDistanceCountdown(
         (prevCountdown) => Number(prevCountdown) - Number(distance)
@@ -132,6 +132,10 @@ const Home = () => {
     setSpeedCount(0);
     setAvgSpeed(0);
     setDistanceCountdown(1000);
+  };
+
+  const resetTotalDistance = () => {
+    setTotalDistance(0.0);
   };
 
   return (
@@ -185,7 +189,13 @@ const Home = () => {
               textAlign: "right",
             }}
           >
-            <Grid size={12} sx={{}}>
+            <Grid
+              size={12}
+              sx={{
+                cursor: "pointer",
+              }}
+              onClick={resetTotalDistance}
+            >
               <h2>Total distance:</h2>
               <Typography
                 sx={{
@@ -193,7 +203,7 @@ const Home = () => {
                   color: "#007bff",
                 }}
               >
-                {totalDistance.toFixed(2)} m
+                {totalDistance} km
               </Typography>
             </Grid>
             <Grid size={12}>
