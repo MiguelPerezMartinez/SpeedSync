@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
+import CustomMarker from "@/assets/mapMarker.webp";
+
 // Dynamically import React-Leaflet components (Only in Client)
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -24,12 +26,17 @@ const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
 
 // Fix Leaflet marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
-  iconUrl: require("leaflet/dist/images/marker-icon.png"),
-  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+
+// Define a custom icon
+const customIcon = new L.Icon({
+  iconUrl: CustomMarker.src, // Replace with the path to your marker icon
+  iconSize: [32, 32], // Adjust size as needed
+  iconAnchor: [16, 32], // Adjust anchor point (center-bottom)
+  popupAnchor: [0, -32], // Adjust popup position
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"), // Optional shadow
 });
 
+// Component
 const Map = () => {
   const [position, setPosition] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
@@ -80,16 +87,16 @@ const Map = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
       {!error && position.latitude && position.longitude ? (
         <>
-          <p>Latitude: {position.latitude}</p>
-          <p>Longitude: {position.longitude}</p>
-
           <MapContainer
             center={[position.latitude, position.longitude]}
-            zoom={13}
-            style={{ height: "400px", width: "100%" }}
+            zoom={25}
+            style={{ height: "150px", width: "100%" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker position={[position.latitude, position.longitude]}>
+            <Marker
+              position={[position.latitude, position.longitude]}
+              icon={customIcon} // Apply the custom marker icon
+            >
               <Popup>Your current location</Popup>
             </Marker>
           </MapContainer>

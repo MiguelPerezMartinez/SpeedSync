@@ -140,7 +140,7 @@ const Home = () => {
       <Grid container sx={{ display: "flex", flexDirection: "column" }}>
         <Grid
           size={12}
-          sx={{ display: "flex", height: "400px" }}
+          sx={{ display: "flex", height: "300px" }}
           onClick={resetAvgSpeed}
         >
           <Grid
