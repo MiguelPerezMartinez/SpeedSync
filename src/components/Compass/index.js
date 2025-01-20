@@ -8,6 +8,14 @@ const Compass = () => {
   const [calibrationOffset, setCalibrationOffset] = useState(0);
   const [trueNorthOffset, setTrueNorthOffset] = useState(0);
 
+  // Detect iOS device
+  const isIOS = () => {
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.userAgent.includes("Mac") && "ontouchend" in document)
+    );
+  };
+
   // Function to apply linear interpolation (LERP) for smooth transitions
   const lerp = (start, end, factor) => start + (end - start) * factor;
 
@@ -31,14 +39,19 @@ const Compass = () => {
   // Request device orientation permission and start tracking
   useEffect(() => {
     const requestPermission = async () => {
-      if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      if (
+        isIOS() &&
+        typeof DeviceOrientationEvent.requestPermission === "function"
+      ) {
         try {
           const permission = await DeviceOrientationEvent.requestPermission();
           if (permission === "granted") {
             startOrientationListener();
+          } else {
+            console.error("Permission denied");
           }
         } catch (error) {
-          console.error("Permission denied:", error);
+          console.error("Permission request failed:", error);
         }
       } else {
         // Android does not require permission
@@ -47,23 +60,35 @@ const Compass = () => {
     };
 
     const startOrientationListener = () => {
-      window.addEventListener("deviceorientation", (event) => {
-        if (event.alpha !== null) {
+      const handleOrientation = (event) => {
+        let alpha = event.alpha;
+
+        // If using absolute orientation (better accuracy)
+        if (event.absolute && event.alpha !== null) {
+          alpha = event.alpha;
+        }
+
+        if (alpha !== null) {
           let newHeading =
-            (Math.round(event.alpha) -
-              calibrationOffset +
-              trueNorthOffset +
-              360) %
+            (Math.round(alpha) - calibrationOffset + trueNorthOffset + 360) %
             360;
           setHeading(newHeading);
         }
-      });
+      };
+
+      window.addEventListener("deviceorientationabsolute", handleOrientation);
+      window.addEventListener("deviceorientation", handleOrientation);
+
+      return () => {
+        window.removeEventListener(
+          "deviceorientationabsolute",
+          handleOrientation
+        );
+        window.removeEventListener("deviceorientation", handleOrientation);
+      };
     };
 
     requestPermission();
-
-    return () =>
-      window.removeEventListener("deviceorientation", startOrientationListener);
   }, [calibrationOffset, trueNorthOffset]);
 
   // Apply smoothing with LERP
