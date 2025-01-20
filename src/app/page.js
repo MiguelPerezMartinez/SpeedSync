@@ -9,6 +9,7 @@ import { useHydration } from "@/utils/hooks/useHydration";
 // Components
 import { Grid2 as Grid, Typography } from "@mui/material";
 import Test from "@/components/Test";
+import Compass from "@/components/Compass";
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
@@ -211,6 +212,7 @@ const Home = () => {
           </Grid>
         </Grid>
         <Grid size={12}>
+          <Compass />
           <Map lat={lat} lon={lon} />
         </Grid>
       </Grid>
