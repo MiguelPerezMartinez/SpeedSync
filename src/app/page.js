@@ -8,8 +8,8 @@ import { useHydration } from "@/utils/hooks/useHydration";
 
 // Components
 import { Grid2 as Grid, Typography } from "@mui/material";
-import Test from "@/components/Test";
-import Compass from "@/components/Compass";
+import Speedometer from "@/components/Speedometer";
+
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
@@ -175,7 +175,7 @@ const Home = () => {
               justifyContent: "center",
             }}
           >
-            <Test speed={speed} maxSpeedReached={maxSpeedReached}></Test>
+            <Speedometer speed={speed} maxSpeedReached={maxSpeedReached} />
           </Grid>
           <Grid
             size={6}
@@ -212,7 +212,6 @@ const Home = () => {
           </Grid>
         </Grid>
         <Grid size={12}>
-          <Compass />
           <Map lat={lat} lon={lon} />
         </Grid>
       </Grid>
