@@ -1,16 +1,14 @@
+"use client";
 import { useState, useEffect, useRef } from "react";
 
 const Compass = () => {
   const canvasRef = useRef(null);
   const [heading, setHeading] = useState(0);
   const [smoothedHeading, setSmoothedHeading] = useState(0);
-  const [calibrationOffset, setCalibrationOffset] = useState(() => {
-    return parseFloat(localStorage.getItem("calibrationOffset")) || 0;
-  });
+  const [calibrationOffset, setCalibrationOffset] = useState(0);
   const [trueNorthOffset, setTrueNorthOffset] = useState(0);
-  const [permissionGranted, setPermissionGranted] = useState(false);
 
-  // Linear interpolation for smooth transitions
+  // Function to apply linear interpolation (LERP) for smooth transitions
   const lerp = (start, end, factor) => start + (end - start) * factor;
 
   // Get True North correction from GPS
@@ -22,7 +20,6 @@ const Compass = () => {
           console.log("User location:", latitude, longitude);
 
           // Placeholder for geomagnetic correction (API needed for exact calculation)
-          // In real-world apps, use NOAA API or lookup tables
           setTrueNorthOffset(0); // Assume no correction for now
         },
         (error) => console.error("GPS Error:", error),
@@ -38,7 +35,6 @@ const Compass = () => {
         try {
           const permission = await DeviceOrientationEvent.requestPermission();
           if (permission === "granted") {
-            setPermissionGranted(true);
             startOrientationListener();
           }
         } catch (error) {
@@ -46,7 +42,6 @@ const Compass = () => {
         }
       } else {
         // Android does not require permission
-        setPermissionGranted(true);
         startOrientationListener();
       }
     };
@@ -74,23 +69,11 @@ const Compass = () => {
   // Apply smoothing with LERP
   useEffect(() => {
     const smoothUpdate = setInterval(() => {
-      setSmoothedHeading((prev) => lerp(prev, heading, 0.1)); // Adjust factor for smoothness
+      setSmoothedHeading((prev) => lerp(prev, heading, 0.1));
     }, 50);
 
     return () => clearInterval(smoothUpdate);
   }, [heading]);
-
-  // Save calibration offset in localStorage
-  const calibrateCompass = () => {
-    localStorage.setItem("calibrationOffset", heading);
-    setCalibrationOffset(heading);
-  };
-
-  // Reset calibration
-  const resetCalibration = () => {
-    localStorage.removeItem("calibrationOffset");
-    setCalibrationOffset(0);
-  };
 
   // Draw circular compass dynamically
   useEffect(() => {
@@ -100,73 +83,76 @@ const Compass = () => {
     const height = canvas.height;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 2 - 20;
+    const radius = Math.min(width, height) / 2 - 1;
 
     ctx.clearRect(0, 0, width, height);
 
-    // Draw compass circle
+    // Background gradient
+    ctx.fillStyle = "white";
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.fill();
 
-    // Draw directions (N, E, S, W)
+    // Draw directions (N, E, S, W) - FIXED (Do not rotate)
     const directions = ["N", "E", "S", "W"];
     for (let i = 0; i < 4; i++) {
-      const angle = (i * 90 - smoothedHeading) * (Math.PI / 180);
-      const x = centerX + Math.cos(angle) * (radius - 20);
-      const y = centerY + Math.sin(angle) * (radius - 20);
+      const angle = i * 90 * (Math.PI / 180); // FIXED: No smoothedHeading rotation
+      const x = centerX + Math.cos(angle) * (radius - 15);
+      const y = centerY + Math.sin(angle) * (radius - 15);
       ctx.fillStyle = "black";
-      ctx.font = "18px Arial";
+      ctx.font = "bold 20px Arial";
       ctx.fillText(directions[i], x - 10, y + 5);
     }
 
-    // Draw needle (fixed at center, rotating with heading)
+    // Draw minor degree markers - FIXED (Do not rotate)
+    for (let i = 0; i < 360; i += 15) {
+      const angle = i * (Math.PI / 180); // FIXED: No smoothedHeading rotation
+      const x1 = centerX + Math.cos(angle) * radius;
+      const y1 = centerY + Math.sin(angle) * radius;
+      const x2 = centerX + Math.cos(angle) * (radius - 5);
+      const y2 = centerY + Math.sin(angle) * (radius - 5);
+
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = i % 90 === 0 ? 3 : 1;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    // Draw animated needle (THIS ROTATES)
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.rotate(-smoothedHeading * (Math.PI / 180)); // FIXED: Rotates only the needle
+
     ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(
-      centerX + Math.sin(-smoothedHeading * (Math.PI / 180)) * radius,
-      centerY - Math.cos(-smoothedHeading * (Math.PI / 180)) * radius
-    );
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    ctx.moveTo(0, -radius + 25);
+    ctx.lineTo(-4, 5);
+    ctx.lineTo(4, 5);
+    ctx.closePath();
+    ctx.fillStyle = "red";
+    ctx.fill();
+
+    ctx.restore();
 
     // Draw center circle
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 5, 0, 2 * Math.PI);
+    ctx.arc(centerX, centerY, 4, 0, 2 * Math.PI);
     ctx.fillStyle = "red";
     ctx.fill();
   }, [smoothedHeading]);
 
   return (
-    <div style={{ textAlign: "center", padding: "20px" }}>
-      <h2>Compass Heading: {Math.round(smoothedHeading)}°</h2>
-      {!permissionGranted && (
-        <button onClick={() => window.location.reload()}>
-          Grant Permission (For iOS)
-        </button>
-      )}
-      <button
-        onClick={calibrateCompass}
-        style={{ margin: "10px", padding: "10px" }}
-      >
-        Calibrate Compass
-      </button>
-      <button
-        onClick={resetCalibration}
-        style={{ margin: "10px", padding: "10px" }}
-      >
-        Reset Calibration
-      </button>
-      <canvas
-        ref={canvasRef}
-        width={250}
-        height={250}
-        style={{ background: "#f0f0f0", borderRadius: "50%" }}
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      width={100}
+      height={100}
+      style={{
+        background: "#e3e3e3",
+        borderRadius: "50%",
+        boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
+      }}
+    />
   );
 };
 
