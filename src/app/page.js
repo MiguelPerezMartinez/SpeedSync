@@ -114,6 +114,7 @@ const Home = () => {
     setSpeedCount(0);
     setAvgSpeed(0);
     setTotalDistance(0);
+    setDistanceCountdown(1000);
   };
 
   return (
