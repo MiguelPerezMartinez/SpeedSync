@@ -211,7 +211,7 @@ const Home = () => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid size={12}>
+        <Grid size={12} sx={{ padding: "1rem 0" }}>
           <Map lat={lat} lon={lon} />
         </Grid>
       </Grid>
