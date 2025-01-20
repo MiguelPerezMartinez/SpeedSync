@@ -12,6 +12,10 @@ const Map = dynamic(() => import("@/components/Map"), {
 const Home = () => {
   const maxSpeedLimit = 300;
 
+  const [consoleLog, setConsoleLog] = useState(null);
+
+  const [position, setPosition] = useState(null);
+
   const [speed, setSpeed] = useState(0);
   const [maxSpeed, setMaxSpeed] = useState(0);
   const [avgSpeed, setAvgSpeed] = useState(0);
@@ -22,52 +26,8 @@ const Home = () => {
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
   const [distanceCountdown, setDistanceCountdown] = useState(1000);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(success, error, {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 5000,
-        });
-      } else {
-        alert("Geolocation not supported in your browser.");
-      }
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const success = (pos) => {
-    const instantSpeed = pos.coords.speed
-      ? (pos.coords.speed * 3.6).toFixed(2)
-      : "0";
-    setSpeed(instantSpeed);
-
-    if (instantSpeed > maxSpeed) {
-      setMaxSpeed(instantSpeed);
-    }
-
-    if (pos.coords.speed !== null) {
-      setTotalSpeed((prevTotal) => prevTotal + pos.coords.speed * 3.6);
-      setSpeedCount((prevCount) => prevCount + 1);
-      setAvgSpeed((totalSpeed / speedCount).toFixed(2));
-    }
-
-    if (lastPosition) {
-      const distance = getDistanceFromLatLon(lastPosition, pos.coords);
-      setTotalDistance((prevDistance) => prevDistance + distance);
-      setDistanceCountdown((prevCountdown) => prevCountdown - distance);
-    }
-    setLastPosition(pos.coords);
-    setLat(pos.coords.latitude);
-    setLon(pos.coords.longitude);
-  };
-
-  const error = (err) => {
-    console.warn(`ERROR(${err.code}): ${err.message}`);
-  };
+  const [speedPercent, setSpeedPercent] = useState(0);
+  const [maxSpeedPercent, setMaxSpeedPercent] = useState(0);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
     const R = 6371000;
@@ -86,6 +46,14 @@ const Home = () => {
     return R * c;
   };
 
+  const success = (pos) => {
+    setPosition(pos);
+  };
+
+  const error = (err) => {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
+  };
+
   const resetAvgSpeed = () => {
     setTotalSpeed(0);
     setSpeedCount(0);
@@ -93,11 +61,71 @@ const Home = () => {
     setTotalDistance(0);
   };
 
-  const speedPercent = (speed / maxSpeedLimit) * 100;
-  const maxSpeedPercent = (maxSpeed / maxSpeedLimit) * 100;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(success, error, {
+          enableHighAccuracy: true,
+        });
+      } else {
+        alert("Geolocation not supported in your browser.");
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (position === null) return;
+    const instantSpeed = (position.coords.speed * 3.6).toFixed(2);
+    setSpeed(instantSpeed);
+
+    if (instantSpeed > maxSpeed) {
+      setMaxSpeed(instantSpeed);
+    }
+
+    if (position.coords.speed !== null) {
+      const tmpTotalSpeed = totalSpeed + instantSpeed;
+      const tmpSpeedCount = speedCount + 1;
+      setConsoleLog(
+        `tmpTotalSpeed: ${tmpTotalSpeed} km/h \n
+        tmpSpeedCount: ${tmpSpeedCount} \n
+        `
+      );
+      setTotalSpeed((prevSpeed) => Number(prevSpeed) + Number(instantSpeed));
+      setSpeedCount((prevCount) => prevCount + 1);
+      setAvgSpeed((tmpTotalSpeed / tmpSpeedCount).toFixed(2));
+    }
+
+    if (lastPosition) {
+      const distance = getDistanceFromLatLon(lastPosition, position.coords);
+      setTotalDistance((prevDistance) => prevDistance + distance);
+      setDistanceCountdown((prevCountdown) => prevCountdown - distance);
+    }
+    setLastPosition(position.coords);
+    setLat(position.coords.latitude);
+    setLon(position.coords.longitude);
+  }, [position]);
+
+  useEffect(() => {
+    setSpeedPercent((speed / maxSpeedLimit) * 100);
+    setMaxSpeedPercent((maxSpeed / maxSpeedLimit) * 100);
+  }, [speed, maxSpeed]);
 
   return (
     <Grid container sx={{ display: "flex", flexDirection: "column" }}>
+      <Grid
+        size={12}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <Typography sx={{ color: "#007bff" }}>
+          {(consoleLog && consoleLog) || 0}
+        </Typography>
+      </Grid>
       <Grid
         size={12}
         sx={{ display: "flex", height: "400px" }}

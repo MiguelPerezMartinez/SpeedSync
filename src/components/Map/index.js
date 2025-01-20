@@ -19,11 +19,7 @@ const MapComponent = ({ lat, lon }) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Marker position={[lat, lon]}>
-          <Popup>
-            A marker at [{lat}, {lon}].
-          </Popup>
-        </Marker>
+        <Marker position={[lat, lon]}></Marker>
       </MapContainer>
       <h2 style={{ marginBottom: -15 }}>Curent position:</h2>
       <h4 style={{ marginBottom: -15 }}>Latitude: {lat}</h4>
