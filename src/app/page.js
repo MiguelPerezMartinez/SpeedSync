@@ -71,7 +71,7 @@ const Home = () => {
       } else {
         alert("Geolocation not supported in your browser.");
       }
-    }, 500);
+    }, 100);
 
     return () => clearInterval(interval);
   }, []);
@@ -136,6 +136,7 @@ const Home = () => {
 
   const resetTotalDistance = () => {
     setTotalDistance(0.0);
+    resetAvgSpeed();
   };
 
   return (
