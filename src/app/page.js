@@ -1,40 +1,222 @@
 "use client";
-import React from "react";
 
-// Auth0
-import { useUser } from "@auth0/nextjs-auth0/client";
+import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 
 // Components
-import { Grid2 as Grid } from "@mui/material";
-import Link from "next/link";
-import Image from "next/image";
+import { Grid2 as Grid, Typography } from "@mui/material";
+const Map = dynamic(() => import("@/components/Map"), {
+  ssr: false, // This ensures the component is only rendered on the client side
+});
 
 const Home = () => {
-  const { user, error } = useUser();
+  const maxSpeedLimit = 300;
 
-  if (error) return <div>{error.message}</div>;
+  const [speed, setSpeed] = useState(0);
+  const [maxSpeed, setMaxSpeed] = useState(0);
+  const [avgSpeed, setAvgSpeed] = useState(0);
+  const [totalSpeed, setTotalSpeed] = useState(0);
+  const [speedCount, setSpeedCount] = useState(0);
+  const [totalDistance, setTotalDistance] = useState(0);
+  const [lastPosition, setLastPosition] = useState(null);
+  const [lat, setLat] = useState(0);
+  const [lon, setLon] = useState(0);
+  const [distanceCountdown, setDistanceCountdown] = useState(1000);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.watchPosition(success, error, {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+          timeout: 5000,
+        });
+      } else {
+        alert("Geolocation not supported in your browser.");
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const success = (pos) => {
+    const instantSpeed = pos.coords.speed
+      ? (pos.coords.speed * 3.6).toFixed(2)
+      : "0";
+    setSpeed(instantSpeed);
+
+    if (instantSpeed > maxSpeed) {
+      setMaxSpeed(instantSpeed);
+    }
+
+    if (pos.coords.speed !== null) {
+      setTotalSpeed((prevTotal) => prevTotal + pos.coords.speed * 3.6);
+      setSpeedCount((prevCount) => prevCount + 1);
+      setAvgSpeed((totalSpeed / speedCount).toFixed(2));
+    }
+
+    if (lastPosition) {
+      const distance = getDistanceFromLatLon(lastPosition, pos.coords);
+      setTotalDistance((prevDistance) => prevDistance + distance);
+      setDistanceCountdown((prevCountdown) => prevCountdown - distance);
+    }
+    setLastPosition(pos.coords);
+    setLat(pos.coords.latitude);
+    setLon(pos.coords.longitude);
+  };
+
+  const error = (err) => {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
+  };
+
+  const getDistanceFromLatLon = (pos1, pos2) => {
+    const R = 6371000;
+    const lat1 = (pos1.latitude * Math.PI) / 180;
+    const lat2 = (pos2.latitude * Math.PI) / 180;
+    const deltaLat = ((pos2.latitude - pos1.latitude) * Math.PI) / 180;
+    const deltaLon = ((pos2.longitude - pos1.longitude) * Math.PI) / 180;
+
+    const a =
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(lat1) *
+        Math.cos(lat2) *
+        Math.sin(deltaLon / 2) *
+        Math.sin(deltaLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const resetAvgSpeed = () => {
+    setTotalSpeed(0);
+    setSpeedCount(0);
+    setAvgSpeed(0);
+    setTotalDistance(0);
+  };
+
+  const speedPercent = (speed / maxSpeedLimit) * 100;
+  const maxSpeedPercent = (maxSpeed / maxSpeedLimit) * 100;
 
   return (
-    <Grid
-      container
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <h1 style={{ textAlign: "center" }}>Example APP</h1>
-      {user && (
-        <div>
-          <Image src={user.picture} alt={user.name} width={100} height={100} />
-          <h2>{user.name}</h2>
-          <p>{user.email}</p>
-        </div>
-      )}
-      <Link href="api/auth/login">
-        <button type="button">LOGIN</button>
-      </Link>
+    <Grid container sx={{ display: "flex", flexDirection: "column" }}>
+      <Grid
+        size={12}
+        sx={{ display: "flex", height: "400px" }}
+        onClick={resetAvgSpeed}
+      >
+        <Grid
+          size={11}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <h2>Avg Speed:</h2>
+          <Typography
+            sx={{
+              fontSize: "7rem",
+              fontWeight: "bold",
+              color: "#007bff",
+              cursor: "pointer",
+              textAlign: "center",
+            }}
+          >
+            {avgSpeed} km/h
+          </Typography>
+        </Grid>
+        <Grid
+          size={1}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "20px",
+              height: "90%",
+              overflow: "hidden",
+              border: "1px solid #fff",
+            }}
+          >
+            <div
+              style={{
+                height: `${speedPercent}%`,
+                position: "absolute",
+                bottom: 0,
+                width: "100%",
+                background: "#00ff00",
+                transition: "height 0.5s ease-in-out",
+              }}
+            ></div>
+            <div
+              style={{
+                top: `${100 - maxSpeedPercent}%`,
+                position: "absolute",
+                left: 0,
+                width: "100%",
+                height: "2px",
+                background: "red",
+                transition: "top 0.5s ease-in-out",
+              }}
+            ></div>
+          </div>
+        </Grid>
+      </Grid>
+      <Grid size={12} sx={{ display: "flex" }}>
+        <Grid size={6} sx={{ display: "flex", flexDirection: "column" }}>
+          <h2>Speed:</h2>
+          <Typography
+            sx={{
+              fontSize: "2rem",
+              color: "#007bff",
+              marginBottom: "1rem",
+            }}
+          >
+            {speed} km/h
+          </Typography>
+          <Map lat={lat} lon={lon} />
+        </Grid>
+        <Grid
+          size={6}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            textAlign: "right",
+          }}
+        >
+          <Grid size={12} sx={{}}>
+            <h2>Total distance:</h2>
+            <Typography
+              sx={{
+                fontSize: "2rem",
+                color: "#007bff",
+              }}
+            >
+              {totalDistance.toFixed(2)} m
+            </Typography>
+          </Grid>
+          <Grid size={12}>
+            <h2 style={{ marginBottom: -15 }}>Countdown:</h2>
+            <h4> (from: 1000m)</h4>
+            <Typography
+              sx={{
+                fontSize: "2rem",
+                color: "#007bff",
+              }}
+            >
+              {distanceCountdown.toFixed(2)} m
+            </Typography>
+          </Grid>
+        </Grid>
+      </Grid>
+      {/* <Grid size={12} sx={{ display: "flex" }}>
+        asdf{" "}
+      </Grid> */}
     </Grid>
   );
 };
