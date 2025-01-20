@@ -13,6 +13,21 @@ const velocimeterSpeeds = [
   0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300,
 ];
 
+// const randomSpeed = () => {
+//   return Math.floor(Math.random() * 300);
+// };
+
+const updateProgressBar = (speed, minSpeed = 0, maxSpeed = 300) => {
+  let ratio = (speed - minSpeed) / (maxSpeed - minSpeed);
+  ratio = Math.max(0, Math.min(1, ratio));
+
+  let r = Math.round(255 * ratio);
+  let g = Math.round(255 * (1 - ratio));
+  let color = `rgb(${r}, ${g}, 0)`;
+
+  document.getElementById("progress-bar").style.background = color;
+};
+
 const Home = () => {
   const maxSpeedLimit = 300;
 
@@ -59,6 +74,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -74,6 +90,7 @@ const Home = () => {
   useEffect(() => {
     if (position === null) return;
     const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
+
     setSpeed(instantSpeed);
 
     if (instantSpeed > maxSpeed) {
@@ -102,9 +119,27 @@ const Home = () => {
     setLastPosition(position.coords);
     setLat(position.coords.latitude);
     setLon(position.coords.longitude);
-  }, [position]);
+  }, [position, speed]);
+
+  // To test with random speed
+  // useEffect(() => {
+  //   const instantSpeed = speed;
+  //   setSpeed(instantSpeed);
+
+  //   if (instantSpeed > maxSpeed) {
+  //     setMaxSpeed(instantSpeed);
+  //   }
+  //   const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+  //     2
+  //   );
+  //   const tmpSpeedCount = Number(speedCount) + 1;
+  //   setTotalSpeed(tmpTotalSpeed);
+  //   setSpeedCount((prevCount) => Number(prevCount + 1));
+  //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  // }, [position, speed]);
 
   useEffect(() => {
+    updateProgressBar(speed);
     setSpeedPercent((speed / maxSpeedLimit) * 100);
     setMaxSpeedPercent((maxSpeed / maxSpeedLimit) * 100);
   }, [speed, maxSpeed]);
@@ -165,13 +200,14 @@ const Home = () => {
             }}
           >
             <div
+              id="progress-bar"
               style={{
                 height: `${speedPercent}%`,
                 position: "absolute",
                 bottom: 0,
                 width: "100%",
-                background: "#00ff00",
-                transition: "height 0.5s ease-in-out",
+                background: "linear-gradient(to top, green, yellow, red)",
+                transition: "all 0.5s ease-in-out",
               }}
             ></div>
             <div
