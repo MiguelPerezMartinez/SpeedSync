@@ -1,34 +1,40 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+
+// Utils
+import { useHydration } from "@/utils/hooks/useHydration";
 
 // Components
 import { Grid2 as Grid, Typography } from "@mui/material";
+import Test from "@/components/Test";
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
 
-const velocimeterSpeeds = [
-  0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300,
-];
+// const velocimeterSpeeds = [
+//   0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300,
+// ];
 
-// const randomSpeed = () => {
-//   return Math.floor(Math.random() * 300);
-// };
-
-const updateProgressBar = (speed, minSpeed = 0, maxSpeed = 300) => {
-  let ratio = (speed - minSpeed) / (maxSpeed - minSpeed);
-  ratio = Math.max(0, Math.min(1, ratio));
-
-  let r = Math.round(255 * ratio);
-  let g = Math.round(255 * (1 - ratio));
-  let color = `rgb(${r}, ${g}, 0)`;
-
-  document.getElementById("progress-bar").style.background = color;
+const randomSpeed = () => {
+  return Math.floor(Math.random() * 300);
 };
 
+// const updateProgressBar = (speed, minSpeed = 0, maxSpeed = 300) => {
+//   let ratio = (speed - minSpeed) / (maxSpeed - minSpeed);
+//   ratio = Math.max(0, Math.min(1, ratio));
+
+//   let r = Math.round(255 * ratio);
+//   let g = Math.round(255 * (1 - ratio));
+//   let color = `rgb(${r}, ${g}, 0)`;
+
+//   document.getElementById("progress-bar").style.background = color;
+// };
+
 const Home = () => {
+  const hydrated = useHydration();
+
   const maxSpeedLimit = 300;
 
   const [position, setPosition] = useState(null);
@@ -45,6 +51,9 @@ const Home = () => {
   const [distanceCountdown, setDistanceCountdown] = useState(1000);
   const [speedPercent, setSpeedPercent] = useState(0);
   const [maxSpeedPercent, setMaxSpeedPercent] = useState(0);
+
+  // TESTS
+  const [progress, setProgress] = useState(0);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
     console.log(pos1, pos2);
@@ -74,7 +83,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // setSpeed(randomSpeed());
+      setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -87,59 +96,59 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (position === null) return;
-    const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
-
-    setSpeed(instantSpeed);
-
-    if (instantSpeed > maxSpeed) {
-      setMaxSpeed(instantSpeed);
-    }
-
-    if (position.coords.speed !== null) {
-      const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-        2
-      );
-      const tmpSpeedCount = Number(speedCount) + 1;
-      setTotalSpeed(tmpTotalSpeed);
-      setSpeedCount((prevCount) => Number(prevCount + 1));
-      setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
-    }
-
-    if (lastPosition) {
-      const distance = getDistanceFromLatLon(lastPosition, position.coords);
-      setTotalDistance(
-        (prevDistance) => Number(prevDistance) + Number(distance)
-      );
-      setDistanceCountdown(
-        (prevCountdown) => Number(prevCountdown) - Number(distance)
-      );
-    }
-    setLastPosition(position.coords);
-    setLat(position.coords.latitude);
-    setLon(position.coords.longitude);
-  }, [position, speed]);
-
-  // To test with random speed
   // useEffect(() => {
-  //   const instantSpeed = speed;
+  //   if (position === null) return;
+  //   const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
+
   //   setSpeed(instantSpeed);
 
   //   if (instantSpeed > maxSpeed) {
   //     setMaxSpeed(instantSpeed);
   //   }
-  //   const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-  //     2
-  //   );
-  //   const tmpSpeedCount = Number(speedCount) + 1;
-  //   setTotalSpeed(tmpTotalSpeed);
-  //   setSpeedCount((prevCount) => Number(prevCount + 1));
-  //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+
+  //   if (position.coords.speed !== null) {
+  //     const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+  //       2
+  //     );
+  //     const tmpSpeedCount = Number(speedCount) + 1;
+  //     setTotalSpeed(tmpTotalSpeed);
+  //     setSpeedCount((prevCount) => Number(prevCount + 1));
+  //     setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  //   }
+
+  //   if (lastPosition) {
+  //     const distance = getDistanceFromLatLon(lastPosition, position.coords);
+  //     setTotalDistance(
+  //       (prevDistance) => Number(prevDistance) + Number(distance)
+  //     );
+  //     setDistanceCountdown(
+  //       (prevCountdown) => Number(prevCountdown) - Number(distance)
+  //     );
+  //   }
+  //   setLastPosition(position.coords);
+  //   setLat(position.coords.latitude);
+  //   setLon(position.coords.longitude);
   // }, [position, speed]);
 
+  // To test with random speed
   useEffect(() => {
-    updateProgressBar(speed);
+    const instantSpeed = speed;
+    setSpeed(instantSpeed);
+
+    if (instantSpeed > maxSpeed) {
+      setMaxSpeed(instantSpeed);
+    }
+    const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+      2
+    );
+    const tmpSpeedCount = Number(speedCount) + 1;
+    setTotalSpeed(tmpTotalSpeed);
+    setSpeedCount((prevCount) => Number(prevCount + 1));
+    setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  }, [position, speed]);
+
+  useEffect(() => {
+    // updateProgressBar(speed);
     setSpeedPercent((speed / maxSpeedLimit) * 100);
     setMaxSpeedPercent((maxSpeed / maxSpeedLimit) * 100);
   }, [speed, maxSpeed]);
@@ -153,155 +162,156 @@ const Home = () => {
   };
 
   return (
-    <Grid container sx={{ display: "flex", flexDirection: "column" }}>
-      <Grid
-        size={12}
-        sx={{ display: "flex", height: "400px" }}
-        onClick={resetAvgSpeed}
-      >
+    <Suspense key={hydrated}>
+      <Grid container sx={{ display: "flex", flexDirection: "column" }}>
+        {/* <input
+          type="range"
+          min="0"
+          max="100"
+          value={progress}
+          onChange={(e) => setProgress(Number(e.target.value))}
+          style={{ marginTop: "20px", width: "200px" }}
+        /> */}
         <Grid
-          size={10}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <h2>Avg Speed:</h2>
-          <Typography
-            sx={{
-              fontSize: "7rem",
-              fontWeight: "bold",
-              color: "#007bff",
-              cursor: "pointer",
-              textAlign: "center",
-            }}
-          >
-            {avgSpeed} km/h
-          </Typography>
-        </Grid>
-        <Grid
-          size={2}
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          size={12}
+          sx={{ display: "flex", height: "400px" }}
+          onClick={resetAvgSpeed}
         >
           <Grid
-            size={1}
+            size={10}
             sx={{
-              position: "relative",
-              overflow: "hidden",
-              border: "1px solid #fff",
-              width: "20px",
-              height: "90%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <div
-              id="progress-bar"
-              style={{
-                height: `${speedPercent}%`,
-                position: "absolute",
-                bottom: 0,
-                width: "100%",
-                background: "linear-gradient(to top, green, yellow, red)",
-                transition: "all 0.5s ease-in-out",
+            <h2>Avg Speed:</h2>
+            <Typography
+              sx={{
+                fontSize: "7rem",
+                fontWeight: "bold",
+                color: "#007bff",
+                cursor: "pointer",
+                textAlign: "center",
               }}
-            ></div>
-            <div
-              style={{
-                top: `${100 - maxSpeedPercent}%`,
-                position: "absolute",
-                left: 0,
-                width: "100%",
-                height: "2px",
-                background: "red",
-                transition: "top 0.5s ease-in-out",
-              }}
-            ></div>
+            >
+              {avgSpeed}
+            </Typography>
           </Grid>
-          <Grid
-            size={1}
+          {/* <Grid
+            size={2}
             sx={{
-              height: "90%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
             <Grid
+              size={1}
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                justifyContent: "space-between",
+                position: "relative",
+                overflow: "hidden",
+                border: "1px solid #fff",
+                width: "20px",
+                height: "90%",
               }}
             >
-              {velocimeterSpeeds
-                .map((speed, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: "block",
-                      height: `100 / ${velocimeterSpeeds.length}%`,
-                    }}
-                  >
-                    -{speed}
-                  </div>
-                ))
-                .reverse()}
+              <div
+                id="progress-bar"
+                style={{
+                  height: `${speedPercent}%`,
+                  position: "absolute",
+                  bottom: 0,
+                  width: "100%",
+                  background: "linear-gradient(to top, green, yellow, red)",
+                  transition: "all 0.5s ease-in-out",
+                }}
+              ></div>
+              <div
+                style={{
+                  top: `${100 - maxSpeedPercent}%`,
+                  position: "absolute",
+                  left: 0,
+                  width: "100%",
+                  height: "2px",
+                  background: "red",
+                  transition: "top 0.5s ease-in-out",
+                }}
+              ></div>
+            </Grid>
+            <Grid
+              size={1}
+              sx={{
+                height: "90%",
+              }}
+            >
+              <Grid
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                  justifyContent: "space-between",
+                }}
+              >
+                {velocimeterSpeeds
+                  .map((speed, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "block",
+                        height: `100 / ${velocimeterSpeeds.length}%`,
+                      }}
+                    >
+                      -{speed}
+                    </div>
+                  ))
+                  .reverse()}
+              </Grid>
+            </Grid>
+          </Grid> */}
+        </Grid>
+        <Grid size={12} sx={{ display: "flex" }}>
+          <Grid size={6} sx={{ display: "flex", flexDirection: "column" }}>
+            <Test speed={speed}></Test>
+            <Map lat={lat} lon={lon} />
+          </Grid>
+          <Grid
+            size={6}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-end",
+              textAlign: "right",
+            }}
+          >
+            <Grid size={12} sx={{}}>
+              <h2>Total distance:</h2>
+              <Typography
+                sx={{
+                  fontSize: "2rem",
+                  color: "#007bff",
+                }}
+              >
+                {totalDistance.toFixed(2)} m
+              </Typography>
+            </Grid>
+            <Grid size={12}>
+              <h2 style={{ marginBottom: -15 }}>Countdown:</h2>
+              <h4> (from: 1000m)</h4>
+              <Typography
+                sx={{
+                  fontSize: "2rem",
+                  color: "#007bff",
+                }}
+              >
+                {distanceCountdown.toFixed(2)} m
+              </Typography>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-      <Grid size={12} sx={{ display: "flex" }}>
-        <Grid size={6} sx={{ display: "flex", flexDirection: "column" }}>
-          <h2>Speed:</h2>
-          <Typography
-            sx={{
-              fontSize: "2rem",
-              color: "#007bff",
-              marginBottom: "1rem",
-            }}
-          >
-            {speed} km/h
-          </Typography>
-          <Map lat={lat} lon={lon} />
-        </Grid>
-        <Grid
-          size={6}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            textAlign: "right",
-          }}
-        >
-          <Grid size={12} sx={{}}>
-            <h2>Total distance:</h2>
-            <Typography
-              sx={{
-                fontSize: "2rem",
-                color: "#007bff",
-              }}
-            >
-              {totalDistance.toFixed(2)} m
-            </Typography>
-          </Grid>
-          <Grid size={12}>
-            <h2 style={{ marginBottom: -15 }}>Countdown:</h2>
-            <h4> (from: 1000m)</h4>
-            <Typography
-              sx={{
-                fontSize: "2rem",
-                color: "#007bff",
-              }}
-            >
-              {distanceCountdown.toFixed(2)} m
-            </Typography>
-          </Grid>
-        </Grid>
-      </Grid>
-    </Grid>
+    </Suspense>
   );
 };
 
