@@ -9,10 +9,12 @@ const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
 
+const velocimeterSpeeds = [
+  0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300,
+];
+
 const Home = () => {
   const maxSpeedLimit = 300;
-
-  const [consoleLog, setConsoleLog] = useState(null);
 
   const [position, setPosition] = useState(null);
 
@@ -30,6 +32,7 @@ const Home = () => {
   const [maxSpeedPercent, setMaxSpeedPercent] = useState(0);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
+    console.log(pos1, pos2);
     const R = 6371000;
     const lat1 = (pos1.latitude * Math.PI) / 180;
     const lat2 = (pos2.latitude * Math.PI) / 180;
@@ -54,13 +57,6 @@ const Home = () => {
     console.warn(`ERROR(${err.code}): ${err.message}`);
   };
 
-  const resetAvgSpeed = () => {
-    setTotalSpeed(0);
-    setSpeedCount(0);
-    setAvgSpeed(0);
-    setTotalDistance(0);
-  };
-
   useEffect(() => {
     const interval = setInterval(() => {
       if ("geolocation" in navigator) {
@@ -77,7 +73,7 @@ const Home = () => {
 
   useEffect(() => {
     if (position === null) return;
-    const instantSpeed = (position.coords.speed * 3.6).toFixed(2);
+    const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
     setSpeed(instantSpeed);
 
     if (instantSpeed > maxSpeed) {
@@ -85,22 +81,23 @@ const Home = () => {
     }
 
     if (position.coords.speed !== null) {
-      const tmpTotalSpeed = totalSpeed + instantSpeed;
-      const tmpSpeedCount = speedCount + 1;
-      setConsoleLog(
-        `tmpTotalSpeed: ${tmpTotalSpeed} km/h \n
-        tmpSpeedCount: ${tmpSpeedCount} \n
-        `
+      const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+        2
       );
-      setTotalSpeed((prevSpeed) => Number(prevSpeed) + Number(instantSpeed));
-      setSpeedCount((prevCount) => prevCount + 1);
-      setAvgSpeed((tmpTotalSpeed / tmpSpeedCount).toFixed(2));
+      const tmpSpeedCount = Number(speedCount) + 1;
+      setTotalSpeed(tmpTotalSpeed);
+      setSpeedCount((prevCount) => Number(prevCount + 1));
+      setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
     }
 
     if (lastPosition) {
       const distance = getDistanceFromLatLon(lastPosition, position.coords);
-      setTotalDistance((prevDistance) => prevDistance + distance);
-      setDistanceCountdown((prevCountdown) => prevCountdown - distance);
+      setTotalDistance(
+        (prevDistance) => Number(prevDistance) + Number(distance)
+      );
+      setDistanceCountdown(
+        (prevCountdown) => Number(prevCountdown) - Number(distance)
+      );
     }
     setLastPosition(position.coords);
     setLat(position.coords.latitude);
@@ -112,27 +109,22 @@ const Home = () => {
     setMaxSpeedPercent((maxSpeed / maxSpeedLimit) * 100);
   }, [speed, maxSpeed]);
 
+  const resetAvgSpeed = () => {
+    setTotalSpeed(0);
+    setSpeedCount(0);
+    setAvgSpeed(0);
+    setTotalDistance(0);
+  };
+
   return (
     <Grid container sx={{ display: "flex", flexDirection: "column" }}>
-      <Grid
-        size={12}
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        <Typography sx={{ color: "#007bff" }}>
-          {(consoleLog && consoleLog) || 0}
-        </Typography>
-      </Grid>
       <Grid
         size={12}
         sx={{ display: "flex", height: "400px" }}
         onClick={resetAvgSpeed}
       >
         <Grid
-          size={11}
+          size={10}
           sx={{
             display: "flex",
             flexDirection: "column",
@@ -154,20 +146,21 @@ const Home = () => {
           </Typography>
         </Grid>
         <Grid
-          size={1}
+          size={2}
           sx={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <div
-            style={{
+          <Grid
+            size={1}
+            sx={{
               position: "relative",
-              width: "20px",
-              height: "90%",
               overflow: "hidden",
               border: "1px solid #fff",
+              width: "20px",
+              height: "90%",
             }}
           >
             <div
@@ -191,7 +184,36 @@ const Home = () => {
                 transition: "top 0.5s ease-in-out",
               }}
             ></div>
-          </div>
+          </Grid>
+          <Grid
+            size={1}
+            sx={{
+              height: "90%",
+            }}
+          >
+            <Grid
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                justifyContent: "space-between",
+              }}
+            >
+              {velocimeterSpeeds
+                .map((speed, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: "block",
+                      height: `100 / ${velocimeterSpeeds.length}%`,
+                    }}
+                  >
+                    -{speed}
+                  </div>
+                ))
+                .reverse()}
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
       <Grid size={12} sx={{ display: "flex" }}>
@@ -242,9 +264,6 @@ const Home = () => {
           </Grid>
         </Grid>
       </Grid>
-      {/* <Grid size={12} sx={{ display: "flex" }}>
-        asdf{" "}
-      </Grid> */}
     </Grid>
   );
 };

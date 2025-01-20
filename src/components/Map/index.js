@@ -10,7 +10,7 @@ import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 const MapComponent = ({ lat, lon }) => {
   return (
     <Grid size={12} sx={{ display: "flex", flexDirection: "column" }}>
-      <MapContainer
+      {/* <MapContainer
         center={[lat, lon]}
         zoom={13}
         style={{ width: "100%", aspectRatio: 1 }}
@@ -20,7 +20,7 @@ const MapComponent = ({ lat, lon }) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <Marker position={[lat, lon]}></Marker>
-      </MapContainer>
+      </MapContainer> */}
       <h2 style={{ marginBottom: -15 }}>Curent position:</h2>
       <h4 style={{ marginBottom: -15 }}>Latitude: {lat}</h4>
       <h4> Longitude: {lon}</h4>
