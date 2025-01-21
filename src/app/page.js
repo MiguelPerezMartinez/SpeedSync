@@ -30,7 +30,7 @@ const Home = () => {
   const [avgSpeed, setAvgSpeed] = useState(0);
   const [totalSpeed, setTotalSpeed] = useState(0);
   const [speedCount, setSpeedCount] = useState(0);
-  const [totalDistance, setTotalDistance] = useState("0.000");
+  const [totalDistance, setTotalDistance] = useState((0).toFixed(3));
   const [lastPosition, setLastPosition] = useState(null);
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
@@ -110,9 +110,6 @@ const Home = () => {
     setLon(position.coords.longitude);
   }, [position, speed]);
 
-  console.log(lastPosition);
-  console.log(totalDistance);
-
   // To test with random speed
   // useEffect(() => {
   //   const instantSpeed = speed;
@@ -137,7 +134,7 @@ const Home = () => {
   };
 
   const resetTotalDistance = () => {
-    setTotalDistance("0.000");
+    setTotalDistance((0).toFixed(3));
     resetAvgSpeed();
     setMaxSpeedReached(0);
   };
