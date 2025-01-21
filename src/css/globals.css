@@ -13,7 +13,6 @@ body {
 }
 
 body {
-  min-width: 400px;
   color: var(--neutral-white);
   background: var(--background-primary);
   font-family: var(--font-geist-mono);
@@ -26,6 +25,7 @@ body {
 
 main {
   padding: 1rem;
+  width: 400px;
 }
 
 h1 {

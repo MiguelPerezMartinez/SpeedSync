@@ -18,6 +18,8 @@
     "@reduxjs/toolkit": "^2.5.0",
     "@tanstack/react-query": "^5.62.11",
     "cookies-next": "^5.1.0",
+    "framer-motion": "^12.0.0",
+    "gsap": "^3.12.7",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "next": "15.1.2",

@@ -8,20 +8,20 @@ import { useHydration } from "@/utils/hooks/useHydration";
 
 // Components
 import { Grid2 as Grid, Typography } from "@mui/material";
-import Speedometer from "@/components/Speedometer";
+import Speedometer from "@/components/Speedometerv2";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false, // This ensures the component is only rendered on the client side
 });
 
-// const randomSpeed = () => {
-//   return Math.floor(Math.random() * 300);
-// };
+const randomSpeed = () => {
+  return Math.floor(Math.random() * 300);
+};
+
+const maxSpeedLimit = 300;
 
 const Home = () => {
   const hydrated = useHydration();
-
-  const maxSpeedLimit = 300;
 
   const [position, setPosition] = useState(null);
 
@@ -30,7 +30,7 @@ const Home = () => {
   const [avgSpeed, setAvgSpeed] = useState(0);
   const [totalSpeed, setTotalSpeed] = useState(0);
   const [speedCount, setSpeedCount] = useState(0);
-  const [totalDistance, setTotalDistance] = useState(0.0);
+  const [totalDistance, setTotalDistance] = useState("0.000");
   const [lastPosition, setLastPosition] = useState(null);
   const [lat, setLat] = useState(0);
   const [lon, setLon] = useState(0);
@@ -63,7 +63,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // setSpeed(randomSpeed());
+      setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -71,61 +71,61 @@ const Home = () => {
       } else {
         alert("Geolocation not supported in your browser.");
       }
-    }, 100);
+    }, 250);
 
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (position === null) return;
-    const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
-
-    setSpeed(instantSpeed);
-
-    if (instantSpeed > maxSpeedReached) {
-      setMaxSpeedReached(instantSpeed);
-    }
-
-    if (position.coords.speed !== null) {
-      const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-        2
-      );
-      const tmpSpeedCount = Number(speedCount) + 1;
-      setTotalSpeed(tmpTotalSpeed);
-      setSpeedCount((prevCount) => Number(prevCount + 1));
-      setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
-    }
-
-    if (lastPosition) {
-      const distance = getDistanceFromLatLon(lastPosition, position.coords);
-      setTotalDistance((prevDistance) =>
-        ((Number(prevDistance) + Number(distance)) / 1000).toFixed(1)
-      );
-      setDistanceCountdown(
-        (prevCountdown) => Number(prevCountdown) - Number(distance)
-      );
-    }
-    setLastPosition(position.coords);
-    setLat(position.coords.latitude);
-    setLon(position.coords.longitude);
-  }, [position, speed]);
-
-  // To test with random speed
   // useEffect(() => {
-  //   const instantSpeed = speed;
+  //   if (position === null) return;
+  //   const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
+
   //   setSpeed(instantSpeed);
 
   //   if (instantSpeed > maxSpeedReached) {
   //     setMaxSpeedReached(instantSpeed);
   //   }
-  //   const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-  //     2
-  //   );
-  //   const tmpSpeedCount = Number(speedCount) + 1;
-  //   setTotalSpeed(tmpTotalSpeed);
-  //   setSpeedCount((prevCount) => Number(prevCount + 1));
-  //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+
+  //   if (position.coords.speed !== null) {
+  //     const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+  //       2
+  //     );
+  //     const tmpSpeedCount = Number(speedCount) + 1;
+  //     setTotalSpeed(tmpTotalSpeed);
+  //     setSpeedCount((prevCount) => Number(prevCount + 1));
+  //     setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  //   }
+
+  //   if (lastPosition) {
+  //     const distance = getDistanceFromLatLon(lastPosition, position.coords);
+  //     setTotalDistance((prevDistance) =>
+  //       ((Number(prevDistance) + Number(distance)) / 1000).toFixed(3)
+  //     );
+  //     setDistanceCountdown(
+  //       (prevCountdown) => Number(prevCountdown) - Number(distance)
+  //     );
+  //   }
+  //   setLastPosition(position.coords);
+  //   setLat(position.coords.latitude);
+  //   setLon(position.coords.longitude);
   // }, [position, speed]);
+
+  // To test with random speed
+  useEffect(() => {
+    const instantSpeed = speed;
+    setSpeed(instantSpeed);
+
+    if (instantSpeed > maxSpeedReached) {
+      setMaxSpeedReached(instantSpeed);
+    }
+    const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+      2
+    );
+    const tmpSpeedCount = Number(speedCount) + 1;
+    setTotalSpeed(tmpTotalSpeed);
+    setSpeedCount((prevCount) => Number(prevCount + 1));
+    setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  }, [position, speed]);
 
   const resetAvgSpeed = () => {
     setTotalSpeed(0);
@@ -135,51 +135,94 @@ const Home = () => {
   };
 
   const resetTotalDistance = () => {
-    setTotalDistance(0.0);
+    setTotalDistance("0.000");
     resetAvgSpeed();
   };
 
   return (
     <Suspense key={hydrated}>
-      <Grid container sx={{ display: "flex", flexDirection: "column" }}>
+      <Grid
+        container
+        sx={{ display: "flex", flexDirection: "column", width: "100%" }}
+      >
         <Grid
           size={12}
-          sx={{ display: "flex", height: "300px" }}
+          sx={{
+            display: "flex",
+            height: "300px",
+            cursor: "pointer",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
           onClick={resetAvgSpeed}
         >
-          <Grid
-            size={12}
+          <h2>Avg Speed:</h2>
+          <Typography
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
+              fontSize: "7rem",
+              fontWeight: "bold",
+              color: "#007bff",
+              textAlign: "center",
             }}
           >
-            <h2>Avg Speed:</h2>
-            <Typography
-              sx={{
-                fontSize: "7rem",
-                fontWeight: "bold",
-                color: "#007bff",
-                cursor: "pointer",
-                textAlign: "center",
-              }}
-            >
-              {avgSpeed}
-            </Typography>
-          </Grid>
+            {avgSpeed}
+          </Typography>
         </Grid>
-        <Grid size={12} sx={{ display: "flex" }}>
+        <Grid size={12}>
+          <Speedometer
+            speed={speed}
+            maxSpeedLimit={maxSpeedLimit}
+            maxSpeedReached={maxSpeedReached}
+          />
+        </Grid>
+        <Grid size={12} sx={{ display: "flex", marginTop: "0.25rem" }}>
           <Grid
             size={6}
             sx={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              flexDirection: "column",
+              textAlign: "left",
+              borderRight: "1px solid #fff",
+              paddingRight: "1rem",
             }}
           >
-            <Speedometer speed={speed} maxSpeedReached={maxSpeedReached} />
+            <Grid
+              size={12}
+              sx={{
+                cursor: "pointer",
+              }}
+            >
+              <h2>Current speed:</h2>
+              <Typography
+                sx={{
+                  fontSize: "2rem",
+                  color: "#007bff",
+                  textAlign: "right",
+                }}
+              >
+                {speed} km/h
+              </Typography>
+            </Grid>
+            <Grid
+              size={12}
+              sx={{
+                cursor: "pointer",
+              }}
+              onClick={resetAvgSpeed}
+            >
+              <h2>Max speed:</h2>
+              <Typography
+                sx={{
+                  fontSize: "2rem",
+                  color: "#007bff",
+                  textAlign: "right",
+                }}
+              >
+                {maxSpeedReached}
+                km/h
+              </Typography>
+            </Grid>
           </Grid>
           <Grid
             size={6}
@@ -220,9 +263,6 @@ const Home = () => {
               </Typography>
             </Grid>
           </Grid>
-        </Grid>
-        <Grid size={12} sx={{ padding: "1rem 0" }}>
-          <Map lat={lat} lon={lon} />
         </Grid>
       </Grid>
     </Suspense>
