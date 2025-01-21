@@ -110,6 +110,9 @@ const Home = () => {
     setLon(position.coords.longitude);
   }, [position, speed]);
 
+  console.log(lastPosition);
+  console.log(totalDistance);
+
   // To test with random speed
   // useEffect(() => {
   //   const instantSpeed = speed;
@@ -128,16 +131,15 @@ const Home = () => {
   // }, [position, speed]);
 
   const resetAvgSpeed = () => {
-    setTotalSpeed(0);
     setSpeedCount(0);
     setAvgSpeed(0);
     setDistanceCountdown(1000);
-    setMaxSpeedReached(0);
   };
 
   const resetTotalDistance = () => {
     setTotalDistance("0.000");
     resetAvgSpeed();
+    setMaxSpeedReached(0);
   };
 
   return (
@@ -188,12 +190,7 @@ const Home = () => {
               paddingRight: "1rem",
             }}
           >
-            <Grid
-              size={12}
-              sx={{
-                cursor: "pointer",
-              }}
-            >
+            <Grid size={12}>
               <h2>Current speed:</h2>
               <Typography
                 sx={{
