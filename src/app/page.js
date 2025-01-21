@@ -63,7 +63,7 @@ const Home = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setSpeed(randomSpeed());
+      // setSpeed(randomSpeed());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -76,62 +76,63 @@ const Home = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // useEffect(() => {
-  //   if (position === null) return;
-  //   const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
-
-  //   setSpeed(instantSpeed);
-
-  //   if (instantSpeed > maxSpeedReached) {
-  //     setMaxSpeedReached(instantSpeed);
-  //   }
-
-  //   if (position.coords.speed !== null) {
-  //     const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-  //       2
-  //     );
-  //     const tmpSpeedCount = Number(speedCount) + 1;
-  //     setTotalSpeed(tmpTotalSpeed);
-  //     setSpeedCount((prevCount) => Number(prevCount + 1));
-  //     setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
-  //   }
-
-  //   if (lastPosition) {
-  //     const distance = getDistanceFromLatLon(lastPosition, position.coords);
-  //     setTotalDistance((prevDistance) =>
-  //       ((Number(prevDistance) + Number(distance)) / 1000).toFixed(3)
-  //     );
-  //     setDistanceCountdown(
-  //       (prevCountdown) => Number(prevCountdown) - Number(distance)
-  //     );
-  //   }
-  //   setLastPosition(position.coords);
-  //   setLat(position.coords.latitude);
-  //   setLon(position.coords.longitude);
-  // }, [position, speed]);
-
-  // To test with random speed
   useEffect(() => {
-    const instantSpeed = speed;
+    if (position === null) return;
+    const instantSpeed = Number(position.coords.speed * 3.6).toFixed(2);
+
     setSpeed(instantSpeed);
 
     if (instantSpeed > maxSpeedReached) {
       setMaxSpeedReached(instantSpeed);
     }
-    const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
-      2
-    );
-    const tmpSpeedCount = Number(speedCount) + 1;
-    setTotalSpeed(tmpTotalSpeed);
-    setSpeedCount((prevCount) => Number(prevCount + 1));
-    setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+
+    if (position.coords.speed !== null) {
+      const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+        2
+      );
+      const tmpSpeedCount = Number(speedCount) + 1;
+      setTotalSpeed(tmpTotalSpeed);
+      setSpeedCount((prevCount) => Number(prevCount + 1));
+      setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+    }
+
+    if (lastPosition) {
+      const distance = getDistanceFromLatLon(lastPosition, position.coords);
+      setTotalDistance((prevDistance) =>
+        ((Number(prevDistance) + Number(distance)) / 1000).toFixed(3)
+      );
+      setDistanceCountdown(
+        (prevCountdown) => Number(prevCountdown) - Number(distance)
+      );
+    }
+    setLastPosition(position.coords);
+    setLat(position.coords.latitude);
+    setLon(position.coords.longitude);
   }, [position, speed]);
+
+  // To test with random speed
+  // useEffect(() => {
+  //   const instantSpeed = speed;
+  //   setSpeed(instantSpeed);
+
+  //   if (instantSpeed > maxSpeedReached) {
+  //     setMaxSpeedReached(instantSpeed);
+  //   }
+  //   const tmpTotalSpeed = (Number(totalSpeed) + Number(instantSpeed)).toFixed(
+  //     2
+  //   );
+  //   const tmpSpeedCount = Number(speedCount) + 1;
+  //   setTotalSpeed(tmpTotalSpeed);
+  //   setSpeedCount((prevCount) => Number(prevCount + 1));
+  //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+  // }, [position, speed]);
 
   const resetAvgSpeed = () => {
     setTotalSpeed(0);
     setSpeedCount(0);
     setAvgSpeed(0);
     setDistanceCountdown(1000);
+    setMaxSpeedReached(0);
   };
 
   const resetTotalDistance = () => {
@@ -250,7 +251,13 @@ const Home = () => {
                 {totalDistance} km
               </Typography>
             </Grid>
-            <Grid size={12}>
+            <Grid
+              size={12}
+              sx={{
+                cursor: "pointer",
+              }}
+              onClick={resetAvgSpeed}
+            >
               <h2 style={{ marginBottom: -15 }}>Countdown:</h2>
               <h4> (from: 1000m)</h4>
               <Typography
