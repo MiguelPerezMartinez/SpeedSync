@@ -18,6 +18,13 @@ const randomSpeed = () => {
   return Math.floor(Math.random() * 300);
 };
 
+const randomLocation = () => {
+  return {
+    latitude: Math.random() * 180 - 90,
+    longitude: Math.random() * 360 - 180,
+  };
+};
+
 const maxSpeedLimit = 300;
 
 const Home = () => {
@@ -37,18 +44,16 @@ const Home = () => {
   const [distanceCountdown, setDistanceCountdown] = useState(1000);
 
   const getDistanceFromLatLon = (pos1, pos2) => {
-    const R = 6371000;
-    const lat1 = (pos1.latitude * Math.PI) / 180;
-    const lat2 = (pos2.latitude * Math.PI) / 180;
-    const deltaLat = ((pos2.latitude - pos1.latitude) * Math.PI) / 180;
-    const deltaLon = ((pos2.longitude - pos1.longitude) * Math.PI) / 180;
-
+    // Get the distance between two points in meters using the Haversine formula
+    const R = 6371000; // Radius of the earth in m
+    const dLat = (pos2.latitude - pos1.latitude) * (Math.PI / 180);
+    const dLon = (pos2.longitude - pos1.longitude) * (Math.PI / 180);
     const a =
-      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-      Math.cos(lat1) *
-        Math.cos(lat2) *
-        Math.sin(deltaLon / 2) *
-        Math.sin(deltaLon / 2);
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(pos1.latitude * (Math.PI / 180)) *
+        Math.cos(pos2.latitude * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -64,6 +69,7 @@ const Home = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       // setSpeed(randomSpeed());
+      // setPosition(randomLocation());
       if ("geolocation" in navigator) {
         navigator.geolocation.watchPosition(success, error, {
           enableHighAccuracy: true,
@@ -110,7 +116,7 @@ const Home = () => {
     setLon(position.coords.longitude);
   }, [position, speed]);
 
-  // To test with random speed
+  // To test with random speed and location
   // useEffect(() => {
   //   const instantSpeed = speed;
   //   setSpeed(instantSpeed);
@@ -125,6 +131,22 @@ const Home = () => {
   //   setTotalSpeed(tmpTotalSpeed);
   //   setSpeedCount((prevCount) => Number(prevCount + 1));
   //   setAvgSpeed((Number(tmpTotalSpeed) / Number(tmpSpeedCount)).toFixed(2));
+
+  //   if (lastPosition) {
+  //     const distance = getDistanceFromLatLon(lastPosition, {
+  //       latitude: lat,
+  //       longitude: lon,
+  //     });
+  //     setTotalDistance((prevDistance) =>
+  //       ((Number(prevDistance) + Number(distance)) / 1000).toFixed(3)
+  //     );
+  //     setDistanceCountdown(
+  //       (prevCountdown) => Number(prevCountdown) - Number(distance)
+  //     );
+  //   }
+  //   setLastPosition(randomLocation());
+  //   setLat(lat);
+  //   setLon(lon);
   // }, [position, speed]);
 
   const resetAvgSpeed = () => {
