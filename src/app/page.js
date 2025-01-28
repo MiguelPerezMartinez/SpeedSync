@@ -104,8 +104,8 @@ const Home = () => {
 
     if (lastPosition) {
       const distance = getDistanceFromLatLon(lastPosition, position.coords);
-      setTotalDistance((prevDistance) =>
-        ((Number(prevDistance) + Number(distance)) / 1000).toFixed(3)
+      setTotalDistance(
+        (prevDistance) => Number(prevDistance) + Number(distance)
       );
       setDistanceCountdown(
         (prevCountdown) => Number(prevCountdown) - Number(distance)
@@ -150,8 +150,9 @@ const Home = () => {
   // }, [position, speed]);
 
   const resetAvgSpeed = () => {
-    setSpeedCount(0);
-    setAvgSpeed(0);
+    setSpeedCount(Number(0));
+    setTotalSpeed(Number(0));
+    setAvgSpeed(Number(0));
     setDistanceCountdown(1000);
   };
 
@@ -159,6 +160,11 @@ const Home = () => {
     setTotalDistance((0).toFixed(3));
     resetAvgSpeed();
     setMaxSpeedReached(0);
+  };
+
+  const convertToKm = (meters) => {
+    // Convert meters to kilometers and round to 3 decimal places
+    return (meters / 1000).toFixed(3);
   };
 
   return (
@@ -264,7 +270,7 @@ const Home = () => {
                   color: "#007bff",
                 }}
               >
-                {totalDistance} km
+                {convertToKm(totalDistance)} km
               </Typography>
             </Grid>
             <Grid
