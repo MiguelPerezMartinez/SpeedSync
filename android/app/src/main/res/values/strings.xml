@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">speed_sync</string>
+    <string name="title_activity_main">speed_sync</string>
+    <string name="package_name">com.speedsync.app</string>
+    <string name="custom_url_scheme">com.speedsync.app</string>
+</resources>

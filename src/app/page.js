@@ -2,6 +2,7 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { Geolocation } from "@capacitor/geolocation";
 
 // Utils
 import { useHydration } from "@/utils/hooks/useHydration";
@@ -24,6 +25,34 @@ const randomLocation = () => {
     longitude: Math.random() * 360 - 180,
   };
 };
+
+async function requestLocationPermissions() {
+  const status = await Geolocation.requestPermissions();
+  console.log("Permission status:", status);
+}
+
+async function watchUserSpeed() {
+  const watchId = await Geolocation.watchPosition({}, (position, err) => {
+    if (err) {
+      console.error("Error getting position:", err);
+      return;
+    }
+
+    const { speed, latitude, longitude, altitude } = position.coords;
+
+    console.log(`Speed: ${speed ? speed + " m/s" : "Not available"}`);
+    console.log(`Latitude: ${latitude}`);
+    console.log(`Longitude: ${longitude}`);
+    console.log(`Altitude: ${altitude}`);
+
+    // Convert speed to km/h if available
+    if (speed !== null) {
+      console.log(`Speed: ${(speed * 3.6).toFixed(2)} km/h`);
+    }
+  });
+
+  return watchId; // Save this ID if you need to clear the watch later
+}
 
 const maxSpeedLimit = 300;
 
@@ -59,6 +88,7 @@ const Home = () => {
   };
 
   const success = (pos) => {
+    console.log(pos);
     setPosition(pos);
   };
 
@@ -67,17 +97,18 @@ const Home = () => {
   };
 
   useEffect(() => {
+    requestLocationPermissions();
     const interval = setInterval(() => {
       // setSpeed(randomSpeed());
       // setPosition(randomLocation());
-      if ("geolocation" in navigator) {
-        navigator.geolocation.watchPosition(success, error, {
-          enableHighAccuracy: true,
-        });
-      } else {
-        alert("Geolocation not supported in your browser.");
-      }
-    }, 250);
+      Geolocation.watchPosition({}, (position, err) => {
+        if (err) {
+          error(err);
+          return;
+        }
+        success(position);
+      });
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
